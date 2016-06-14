@@ -3,7 +3,7 @@ main: me.ryanhamshire.GriefPrevention.GriefPrevention
 softdepend: [Vault, Multiverse-Core, My Worlds, MystCraft, Transporter, TheUnderground, WorldGuard, WorldEdit, RoyalCommands, MultiWorld, Denizen]
 dev-url: http://dev.bukkit.org/server-mods/grief-prevention
 loadbefore: [TheUnderground]
-version: 14.6
+version: 14.7
 commands:
    abandonclaim:
       description: Deletes a claim.
@@ -53,6 +53,11 @@ commands:
       usage: /AdjustBonusClaimBlocks <player> <amount>
       permission: griefprevention.adjustclaimblocks
       aliases: acb
+   adjustbonusclaimblocksall:
+      description: Adds or subtracts bonus claim blocks for all online players.
+      usage: /AdjustBonusClaimBlocksAll <player> <amount>
+      permission: griefprevention.adjustclaimblocks
+      aliases: acball
    setaccruedclaimblocks:
       description: Updates a player's accrued claim block total.
       usage: /SetAccruedClaimBlocks <player> <amount>
