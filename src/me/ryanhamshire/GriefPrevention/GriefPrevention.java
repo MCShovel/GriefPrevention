@@ -188,7 +188,14 @@ public class GriefPrevention extends JavaPlugin
 	
 	public boolean config_limitTreeGrowth;                          //whether trees should be prevented from growing into a claim from outside
 	public boolean config_pistonsInClaimsOnly;                      //whether pistons are limited to only move blocks located within the piston's land claim
-	
+	//ROK --->
+	public boolean config_pistonsCanModifyClaim;                    //whether pistons are able to modify claimed blocks from outside
+	public boolean config_dispenseWaterInClaims;					//whether dispenser will dispense water inside a claim
+	public boolean config_dispenseWaterOutsideClaims;				//whether dispenser will dispense water outside a claim
+	public boolean config_dispenseLavaInClaims;						//whether dispenser will dispense lava inside a claim
+	public boolean config_dispenseLavaOutsideClaims;				//whether dispenser will dispense lava outside a claim
+	//<--- ROK
+
 	//custom log settings
 	public int config_logs_daysToKeep;
     public boolean config_logs_socialEnabled;
@@ -577,7 +584,14 @@ public class GriefPrevention extends JavaPlugin
         this.config_blockSkyTrees = config.getBoolean("GriefPrevention.LimitSkyTrees", true);
         this.config_limitTreeGrowth = config.getBoolean("GriefPrevention.LimitTreeGrowth", false);
         this.config_pistonsInClaimsOnly = config.getBoolean("GriefPrevention.LimitPistonsToLandClaims", true);
-                
+        //ROK --->
+        this.config_pistonsCanModifyClaim = config.getBoolean("GriefPrevention.AllowPistonsToModifyClaims", false);
+        this.config_dispenseWaterInClaims = config.getBoolean("GriefPrevention.AllowDispenseWaterInClaims", false);
+        this.config_dispenseWaterOutsideClaims = config.getBoolean("GriefPrevention.AllowDispenseWaterOutsideClaims", false);
+        this.config_dispenseLavaInClaims = config.getBoolean("GriefPrevention.AllowDispenseLavaInClaims", false);
+        this.config_dispenseLavaOutsideClaims = config.getBoolean("GriefPrevention.AllowDispenseLavaOutsideClaims", false);
+		//<--- ROK
+
         this.config_fireSpreads = config.getBoolean("GriefPrevention.FireSpreads", false);
         this.config_fireDestroys = config.getBoolean("GriefPrevention.FireDestroys", false);
         
@@ -824,7 +838,15 @@ public class GriefPrevention extends JavaPlugin
         outConfig.set("GriefPrevention.LimitSkyTrees", this.config_blockSkyTrees);
         outConfig.set("GriefPrevention.LimitTreeGrowth", this.config_limitTreeGrowth);
         outConfig.set("GriefPrevention.LimitPistonsToLandClaims", this.config_pistonsInClaimsOnly);
-        
+
+        //ROK --->
+        outConfig.set("GriefPrevention.AllowPistonsToModifyClaims", this.config_pistonsCanModifyClaim);
+        outConfig.set("GriefPrevention.AllowDispenseWaterInClaims", this.config_dispenseWaterInClaims);
+        outConfig.set("GriefPrevention.AllowDispenseWaterOutsideClaims", this.config_dispenseWaterOutsideClaims);
+        outConfig.set("GriefPrevention.AllowDispenseLavaInClaims", this.config_dispenseLavaInClaims);
+        outConfig.set("GriefPrevention.AllowDispenseLavaOutsideClaims", this.config_dispenseLavaOutsideClaims);
+        //<--- ROK
+
         outConfig.set("GriefPrevention.FireSpreads", this.config_fireSpreads);
         outConfig.set("GriefPrevention.FireDestroys", this.config_fireDestroys);
         

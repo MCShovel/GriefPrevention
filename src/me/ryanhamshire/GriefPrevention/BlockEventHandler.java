@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -407,6 +408,22 @@ public class BlockEventHandler implements Listener
 	    return false;
 	}
 	
+	static boolean canPistonModifyClaim(Claim claim) {
+		if (claim == null) {
+			return GriefPrevention.instance.config_pistonsInClaimsOnly == false;
+		}
+		if (claim.isAdminClaim()) {
+			return false;
+		}
+		if (!GriefPrevention.instance.config_pistonsCanModifyClaim) {
+			return false;
+		}
+		if (claim.siegeData != null) {
+			return true; // only IF configured, and only then is siege
+		}
+		return false;
+	}
+	
 	//blocks "pushing" other players' blocks around (pistons)
 	@EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
 	public void onBlockPistonExtend (BlockPistonExtendEvent event)
@@ -429,10 +446,12 @@ public class BlockEventHandler implements Listener
 			//pushing "air" is harmless
 			if(invadedBlock.getType() == Material.AIR) return;
 			
+			Claim destClaim = this.dataStore.getClaimAt(invadedBlock.getLocation(), false, null);
 			if(	this.dataStore.getClaimAt(pistonBlock.getLocation(), false, null) == null && 
-				this.dataStore.getClaimAt(invadedBlock.getLocation(), false, null) != null)
+				destClaim != null)
 			{
-				event.setCancelled(true);				
+				if (!canPistonModifyClaim(destClaim))
+					event.setCancelled(true);
 			}
 			
 			return;
@@ -472,7 +491,6 @@ public class BlockEventHandler implements Listener
                 }
 		    }
 		}
-		
 		//otherwise, consider ownership of piston and EACH pushed block
 		else
 		{
@@ -486,7 +504,7 @@ public class BlockEventHandler implements Listener
     			if(claim != null)
     			{
     			    cachedClaim = claim;
-    			    if(!claim.getOwnerName().equals(pistonClaimOwnerName))
+    			    if(!claim.getOwnerName().equals(pistonClaimOwnerName) && !canPistonModifyClaim(claim))
     			    {
         				event.setCancelled(true);
         				pistonBlock.getWorld().createExplosion(pistonBlock.getLocation(), 0);
@@ -517,7 +535,7 @@ public class BlockEventHandler implements Listener
 				}
 				
 				//if pushing this block will change ownership, cancel the event and take away the piston (for performance reasons)
-				if(!newOwnerName.equals(originalOwnerName) && !newOwnerName.isEmpty())
+				if(!newOwnerName.equals(originalOwnerName) && !newOwnerName.isEmpty() && !canPistonModifyClaim(newClaim))
 				{
 					event.setCancelled(true);
 					pistonBlock.getWorld().createExplosion(pistonBlock.getLocation(), 0);
@@ -562,9 +580,7 @@ public class BlockEventHandler implements Listener
         		    }
     		    }
     		}
-    		
     		//otherwise, consider ownership of both piston and block
-    		else
     		{
     		    //who owns the piston, if anyone?
                 String pistonOwnerName = "_";
@@ -582,7 +598,7 @@ public class BlockEventHandler implements Listener
             		
             		//if there are owners for the blocks, they must be the same player
             		//otherwise cancel the event
-            		if(!pistonOwnerName.equals(movingBlockOwnerName))
+            		if(!pistonOwnerName.equals(movingBlockOwnerName) && !canPistonModifyClaim(movingBlockClaim))
             		{
             			event.setCancelled(true);
             			block.getWorld().createExplosion(block.getLocation(), 0);
@@ -776,17 +792,62 @@ public class BlockEventHandler implements Listener
 			dispenseEvent.setCancelled(true);
 			return;
 		}
-		
-		//wilderness to wilderness is OK
-		if(fromClaim == null && toClaim == null) return;
-		
-		//within claim is OK
-		if(fromClaim == toClaim) return;
-		
-		//everything else is NOT OK
-		dispenseEvent.setCancelled(true);
+
+		if (toClaim != null && toClaim.isAdminClaim()) {
+			dispenseEvent.setCancelled(true);
+			return;
+		}
+
+		//if dispensing into the wilderness...
+		if(toClaim == null) {
+			if (materialDispensed == Material.WATER_BUCKET && !GriefPrevention.instance.config_dispenseWaterOutsideClaims) {
+				dispenseEvent.setCancelled(true);
+			}
+			if (materialDispensed == Material.LAVA_BUCKET && !GriefPrevention.instance.config_dispenseLavaOutsideClaims) {
+				dispenseEvent.setCancelled(true);
+			}
+			return;
+		}
+		else if (toClaim.siegeData != null) {
+			return; // all things allowed in siege!
+		}
+		else if (fromClaim != null && toClaim.ownerID.equals(fromClaim.ownerID)) {
+			//within claim:
+			if ((materialDispensed == Material.WATER_BUCKET && !GriefPrevention.instance.config_dispenseWaterInClaims)
+			||  (materialDispensed == Material.LAVA_BUCKET && !GriefPrevention.instance.config_dispenseLavaInClaims)) {
+				//only IF the player is home
+				Location toLocation = toBlock.getLocation();
+				Player closest = null;
+				double distance = 0;
+				Location lmin = toClaim.getLesserBoundaryCorner().add(-250, 0, -250);
+				Location lmax = toClaim.getGreaterBoundaryCorner().add(250, 0, 250);
+				
+				for(Player p : toBlock.getWorld().getPlayers()) {
+					Location ploc = p.getLocation();
+					if ((ploc.getX() > lmin.getX() && ploc.getX() < lmax.getX()) &&
+						(ploc.getZ() > lmin.getZ() && ploc.getZ() < lmax.getZ())) {
+						double dist = ploc.distanceSquared(toLocation);
+						if (null == closest || dist < distance) {
+							closest = p;
+							distance = dist;
+						}
+					}
+				}
+				if (closest == null || null != toClaim.allowBuild(closest, materialDispensed)) {
+					dispenseEvent.setCancelled(true);
+					return;
+				}
+			}
+		}
+		else { //inside a claim, but dispenser is outside
+			if (materialDispensed == Material.LAVA_BUCKET || materialDispensed == Material.LAVA_BUCKET ||
+				materialDispensed == Material.FLINT_AND_STEEL || materialDispensed == Material.BUCKET) {
+				dispenseEvent.setCancelled(true);
+				return;
+			}
+		}
 	}
-	
+
 	@EventHandler(ignoreCancelled = true)
     public void onTreeGrow (StructureGrowEvent growEvent)
     {
