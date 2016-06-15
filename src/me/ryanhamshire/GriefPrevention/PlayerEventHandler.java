@@ -1537,6 +1537,16 @@ class PlayerEventHandler implements Listener
 				}
 			}
 		}
+		else if (GriefPrevention.instance.config_dispenseLavaOutsideClaims == false && bucketEvent.getBucket() == Material.LAVA_BUCKET) {
+			GriefPrevention.sendMessage(player, TextMode.Err, Messages.NoWildernessBuckets);
+			bucketEvent.setCancelled(true);
+			return;
+		}
+		else if (GriefPrevention.instance.config_dispenseWaterOutsideClaims == false && bucketEvent.getBucket() == Material.WATER_BUCKET) {
+			GriefPrevention.sendMessage(player, TextMode.Err, Messages.NoWildernessBuckets);
+			bucketEvent.setCancelled(true);
+			return;
+		}
 		
 		//lava buckets can't be dumped near other players unless pvp is on
 		if((!GriefPrevention.instance.pvpRulesApply(block.getWorld()) || !GriefPrevention.instance.config_pvp_allowLavaNearPlayers) && !player.hasPermission("griefprevention.lava"))
