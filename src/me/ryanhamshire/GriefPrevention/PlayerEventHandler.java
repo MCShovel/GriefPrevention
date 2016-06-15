@@ -1184,7 +1184,8 @@ class PlayerEventHandler implements Listener
 		if(sourceClaim != null && sourceClaim.siegeData != null)
 		{
 			GriefPrevention.sendMessage(player, TextMode.Err, Messages.SiegeNoTeleport);
-			event.setCancelled(true);
+			if (!player.hasPermission("griefprevention.teleportoutofsiege"))
+				event.setCancelled(true);
 			return;
 		}
 		
@@ -1193,7 +1194,8 @@ class PlayerEventHandler implements Listener
 		if(destinationClaim != null && destinationClaim.siegeData != null)
 		{
 			GriefPrevention.sendMessage(player, TextMode.Err, Messages.BesiegedNoTeleport);
-			event.setCancelled(true);
+			if (!player.hasPermission("griefprevention.teleportintosiege"))
+				event.setCancelled(true);
 			return;
 		}
 	}
