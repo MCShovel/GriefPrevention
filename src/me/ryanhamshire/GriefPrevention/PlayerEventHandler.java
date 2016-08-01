@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -909,6 +910,22 @@ class PlayerEventHandler implements Listener
                 player.teleport(returnLocation);
             }
         }
+        
+        //if we're holding a logout message for this player, don't send that or this event's join message
+        if(GriefPrevention.instance.config_spam_logoutMessageDelaySeconds > 0)
+        {
+            String joinMessage = event.getJoinMessage();
+            if(joinMessage != null && !joinMessage.isEmpty())
+            {
+                Integer taskID = this.heldLogoutMessages.get(player.getUniqueId());
+                if(taskID != null && Bukkit.getScheduler().isQueued(taskID))
+                {
+                    Bukkit.getScheduler().cancelTask(taskID);
+                    player.sendMessage(event.getJoinMessage());
+                    event.setJoinMessage("");
+                }
+            }
+        }
 	}
 	
 	//when a player spawns, conditionally apply temporary pvp protection 
@@ -931,20 +948,24 @@ class PlayerEventHandler implements Listener
     }
 	
 	//when a player dies...
-	@EventHandler(priority = EventPriority.HIGHEST)
+	private HashMap<UUID, Long> deathTimestamps = new HashMap<UUID, Long>();
+    @EventHandler(priority = EventPriority.HIGHEST)
 	void onPlayerDeath(PlayerDeathEvent event)
 	{
 		//FEATURE: prevent death message spam by implementing a "cooldown period" for death messages
-		PlayerData playerData = this.dataStore.getPlayerData(event.getEntity().getUniqueId());
+		Player player = event.getEntity();
+        Long lastDeathTime = this.deathTimestamps.get(player.getUniqueId());
 		long now = Calendar.getInstance().getTimeInMillis(); 
-		if(now - playerData.lastDeathTimeStamp < GriefPrevention.instance.config_spam_deathMessageCooldownSeconds * 1000)
+		if(lastDeathTime != null && now - lastDeathTime < GriefPrevention.instance.config_spam_deathMessageCooldownSeconds * 1000)
 		{
-			event.setDeathMessage("");
+			player.sendMessage(event.getDeathMessage());  //let the player assume his death message was broadcasted to everyone
+		    event.setDeathMessage("");
 		}
 		
-		playerData.lastDeathTimeStamp = now;
+		this.deathTimestamps.put(player.getUniqueId(), now);
 		
 		//these are related to locking dropped items on death to prevent theft
+		PlayerData playerData = GriefPrevention.instance.dataStore.getPlayerData(player.getUniqueId());
 		playerData.dropsAreUnlocked = false;
 		playerData.receivedDropUnlockAdvertisement = false;
 	}
@@ -959,6 +980,7 @@ class PlayerEventHandler implements Listener
     }
 	
 	//when a player quits...
+	private HashMap<UUID, Integer> heldLogoutMessages = new HashMap<UUID, Integer>();
 	@EventHandler(priority = EventPriority.HIGHEST)
 	void onPlayerQuit(PlayerQuitEvent event)
 	{
@@ -1029,6 +1051,19 @@ class PlayerEventHandler implements Listener
         
         //drop data about this player
         this.dataStore.clearCachedPlayerData(playerID);
+        
+        //send quit message later, but only if the player stays offline
+        if(GriefPrevention.instance.config_spam_logoutMessageDelaySeconds > 0)
+        {
+            String quitMessage = event.getQuitMessage();
+            if(quitMessage != null && !quitMessage.isEmpty())
+            {
+                BroadcastMessageTask task = new BroadcastMessageTask(quitMessage);
+                int taskID = Bukkit.getScheduler().scheduleSyncDelayedTask(GriefPrevention.instance, task, 20L * GriefPrevention.instance.config_spam_logoutMessageDelaySeconds);
+                this.heldLogoutMessages.put(playerID, taskID);
+                event.setQuitMessage("");
+            }
+        }
 	}
 	
 	//determines whether or not a login or logout notification should be silenced, depending on how many there have been in the last minute
