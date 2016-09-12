@@ -650,6 +650,7 @@ public class EntityEventHandler implements Listener
             if(event.getEntity().hasMetadata("GP_ITEMOWNER"))
             {
                 event.setCancelled(true);
+                return;
             }
         }
         
@@ -672,6 +673,28 @@ public class EntityEventHandler implements Listener
                     return;
                 }
             }
+        }
+
+        {
+	        Location eloc = event.getEntity().getLocation();
+	        Claim claim = this.dataStore.getClaimAt(eloc, false, null);
+	        if (claim != null) {
+	            DamageCause cause = event.getCause();
+	            EntityType etype = event.getEntityType();
+	        	if (etype == EntityType.ARMOR_STAND || etype == EntityType.ITEM_FRAME || etype == EntityType.PAINTING) {
+	        		if (cause != DamageCause.ENTITY_ATTACK && claim.siegeData == null) {
+	        			event.setCancelled(true);
+	        			return;
+	        		}
+	        	}
+	        	else if (etype == EntityType.VILLAGER) {
+	        		if (cause != DamageCause.ENTITY_ATTACK && cause != DamageCause.LAVA
+	        				&& cause != DamageCause.FALL && cause != DamageCause.SUFFOCATION) {
+	        			event.setCancelled(true);
+	        			return;
+	        		}
+	        	}
+	        }
         }
         
         //the rest is only interested in entities damaging entities (ignoring environmental damage)
