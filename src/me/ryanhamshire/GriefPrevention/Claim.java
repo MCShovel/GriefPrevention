@@ -663,7 +663,7 @@ public class Claim
 		//loop through all the entries in the hash map
 		for (String key : this.playerIDToClaimPermissionMap.keySet())
 		{
-			if (key.length() == 36 && key.matches("^[\\da-f-]$")) {
+			if (key.length() == 36 && key.matches("^[\\da-f-]+$")) {
 				if (Bukkit.getServer().getPlayer(UUID.fromString(key)) != null) {
 					return isAnyoneHomeLastResult = true;
 				}
@@ -673,7 +673,7 @@ public class Claim
 		//managers are handled a little differently
 		for(String key : this.managers)
 		{
-			if (key.length() == 36 && key.matches("^[\\da-f-]$")) {
+			if (key.length() == 36 && key.matches("^[\\da-f-]+$")) {
 				if (Bukkit.getServer().getPlayer(UUID.fromString(key)) != null) {
 					return isAnyoneHomeLastResult = true;
 				}
