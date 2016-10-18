@@ -1023,7 +1023,12 @@ public abstract class DataStore
 		//notify everyone who won and lost
 		if(winnerName != null && loserName != null)
 		{
-			GriefPrevention.instance.getServer().broadcastMessage(winnerName + " defeated " + loserName + " in siege warfare!");
+			String msg = ChatColor.translateAlternateColorCodes('&', "broadcast &f" + winnerName + "&7 defeated &c" + loserName + "&7 in siege warfare!");
+			//GriefPrevention.instance.getServer().broadcastMessage(msg);
+			GriefPrevention.instance.getServer().dispatchCommand(
+					GriefPrevention.instance.getServer().getConsoleSender(), 
+					msg
+				);
 		}
 		
 		//if the claim should be opened to looting

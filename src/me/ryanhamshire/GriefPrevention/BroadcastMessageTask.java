@@ -34,6 +34,10 @@ class BroadcastMessageTask implements Runnable
     @Override
 	public void run()
 	{
-		Bukkit.getServer().broadcastMessage(this.message);
+		//Bukkit.getServer().broadcastMessage(this.message);
+    	Bukkit.getServer().dispatchCommand(
+    			Bukkit.getServer().getConsoleSender(), 
+				this.message
+			);
 	}	
 }
