@@ -643,46 +643,6 @@ public class Claim
 		return GriefPrevention.lookupPlayerName(this.ownerID);
 	}	
 
-	private long isAnyoneHomeLastChecked;
-	private boolean isAnyoneHomeLastResult;
-	
-	public boolean isAnyoneHome() {
-		long now = System.currentTimeMillis();
-		
-		if (now - isAnyoneHomeLastChecked < 5000) {
-			return isAnyoneHomeLastResult;
-		}
-		
-		isAnyoneHomeLastChecked = now;
-		isAnyoneHomeLastResult = false;
-
-		if (Bukkit.getServer().getPlayer(this.ownerID) != null) {
-			return isAnyoneHomeLastResult = true;
-		}
-		
-		//loop through all the entries in the hash map
-		for (String key : this.playerIDToClaimPermissionMap.keySet())
-		{
-			if (key.length() == 36 && key.matches("^[\\da-f-]+$")) {
-				if (Bukkit.getServer().getPlayer(UUID.fromString(key)) != null) {
-					return isAnyoneHomeLastResult = true;
-				}
-			}
-		}
-		
-		//managers are handled a little differently
-		for(String key : this.managers)
-		{
-			if (key.length() == 36 && key.matches("^[\\da-f-]+$")) {
-				if (Bukkit.getServer().getPlayer(UUID.fromString(key)) != null) {
-					return isAnyoneHomeLastResult = true;
-				}
-			}
-		}
-
-		return isAnyoneHomeLastResult = false;
-	}
-
 	//whether or not a location is in a claim
 	//ignoreHeight = true means location UNDER the claim will return TRUE
 	//excludeSubdivisions = true means that locations inside subdivisions of the claim will return FALSE

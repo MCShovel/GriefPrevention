@@ -407,7 +407,7 @@ public class BlockEventHandler implements Listener
 	    if(type == Material.HOPPER || type == Material.BEACON || type == Material.MOB_SPAWNER) return true;
 	    return false;
 	}
-	
+
 	static boolean canPistonModifyClaim(Claim claim) {
 		if (claim == null) {
 			return GriefPrevention.instance.config_pistonsInClaimsOnly == false;
@@ -423,30 +423,14 @@ public class BlockEventHandler implements Listener
 		}
 		return false;
 	}
-	
-	private boolean cancelPistonNobodyOnline(Claim claim, Block pistonBlock) {
-		if (claim == null) {
-			return false; 
-		}
 
-		if (claim.isAdminClaim()) {
-			return true;
-		}
-		if (claim.siegeData == null && !claim.isAnyoneHome()) {
-			return true;
-		}
-		
-		return false;
-	}
-	
 	
 	//blocks "pushing" other players' blocks around (pistons)
 	@EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
 	public void onBlockPistonExtend (BlockPistonExtendEvent event)
 	{		
 	    //pushing down is ALWAYS safe
-	    // ROK - No longer true: 
-		// if(event.getDirection() == BlockFace.DOWN) return;
+	    if(event.getDirection() == BlockFace.DOWN) return;
 	    
 	    //don't track in worlds where claims are not enabled
         if(!GriefPrevention.instance.claimsEnabledForWorld(event.getBlock().getWorld())) return;
@@ -478,13 +462,7 @@ public class BlockEventHandler implements Listener
 		String pistonClaimOwnerName = "_";
 		Claim claim = this.dataStore.getClaimAt(event.getBlock().getLocation(), false, null);
 		if(claim != null) pistonClaimOwnerName = claim.getOwnerName();
-		
-		// ROK - added guard against claim modification with pistons...
-		if (cancelPistonNobodyOnline(claim, pistonBlock)) {
-			event.setCancelled(true);
-			return;
-		}
-		
+
 		//if pistons are limited to same-claim block movement
 		if(GriefPrevention.instance.config_pistonsInClaimsOnly)
 		{
@@ -612,12 +590,6 @@ public class BlockEventHandler implements Listener
                 Claim pistonClaim = this.dataStore.getClaimAt(pistonLocation, false, null);
                 if(pistonClaim != null) pistonOwnerName = pistonClaim.getOwnerName();
 
-        		// ROK - added guard against claim modification with pistons...
-        		if (cancelPistonNobodyOnline(pistonClaim, block)) {
-        			event.setCancelled(true);
-        			return;
-        		}
-        		
     		    String movingBlockOwnerName = "_";
         		for(Block movedBlock : event.getBlocks())
         		{
