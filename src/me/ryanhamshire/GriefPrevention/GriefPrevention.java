@@ -2479,7 +2479,7 @@ public class GriefPrevention extends JavaPlugin
 			Claim defenderClaim = this.dataStore.getClaimAt(defender.getLocation(), false, null);
 			
 			//defender must have some level of permission there to be protected
-			if(defenderClaim == null || defenderClaim.allowAccess(defender) != null)
+			if(defenderClaim == null || defenderClaim.allowAccess(defender, false) != null)
 			{
 				GriefPrevention.sendMessage(player, TextMode.Err, Messages.NotSiegableThere);
 				return true;
@@ -2937,7 +2937,7 @@ public class GriefPrevention extends JavaPlugin
 				switch(permissionLevel)
 				{
 					case Access:
-						errorMessage = claim.allowAccess(player);
+						errorMessage = claim.allowAccess(player, false);
 						break;
 					case Inventory:
 						errorMessage = claim.allowContainers(player);

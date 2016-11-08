@@ -1143,7 +1143,7 @@ public abstract class DataStore
 		if(claim.isAdminClaim()) return;
 		
 		//player must have some level of permission to be sieged in a claim
-		if(claim.allowAccess(player) != null) return;
+		if(claim.allowAccess(player, false) != null) return;
 		
 		//otherwise extend the siege
 		playerData.siegeData.claims.add(claim);

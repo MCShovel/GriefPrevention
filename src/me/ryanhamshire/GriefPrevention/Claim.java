@@ -103,7 +103,7 @@ public class Claim
 	{
 		if(this.isAdminClaim()) return false;
 		
-		if(this.allowAccess(defender) != null) return false;
+		if(this.allowAccess(defender, false) != null) return false;
 		
 		return true;
 	}
@@ -446,7 +446,7 @@ public class Claim
 	}
 	
 	//access permission check
-	public String allowAccess(Player player)
+	public String allowAccess(Player player, boolean allowSiegeWinner)
 	{
 	    //following a siege where the defender lost, the claim will allow everyone access for a time
 		if(this.doorsOpen) return null;
@@ -471,7 +471,7 @@ public class Claim
 		
 		//permission inheritance for subdivisions
 		if(this.parent != null)
-			return this.parent.allowAccess(player);
+			return this.parent.allowAccess(player, allowSiegeWinner);
 		
 		//catch-all error message for all other cases
 		String reason = GriefPrevention.instance.dataStore.getMessage(Messages.NoAccessPermission, this.getOwnerName());

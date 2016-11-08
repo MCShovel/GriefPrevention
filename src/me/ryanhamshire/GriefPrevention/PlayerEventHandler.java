@@ -481,7 +481,7 @@ class PlayerEventHandler implements Listener
             if(claim != null)
             {
                 playerData.lastClaim = claim;
-                String reason = claim.allowAccess(player); 
+                String reason = claim.allowAccess(player, false); 
                 if(reason != null)
                 {
                     GriefPrevention.sendMessage(player, TextMode.Err, reason);
@@ -1075,7 +1075,7 @@ class PlayerEventHandler implements Listener
 			if(toClaim != null)
 			{
 				playerData.lastClaim = toClaim;
-				String noAccessReason = toClaim.allowAccess(player);
+				String noAccessReason = toClaim.allowAccess(player, true);
 				if(noAccessReason != null)
 				{
 					GriefPrevention.sendMessage(player, TextMode.Err, noAccessReason);
@@ -1676,7 +1676,7 @@ class PlayerEventHandler implements Listener
 			{
 				playerData.lastClaim = claim;
 				
-				String noAccessReason = claim.allowAccess(player);
+				String noAccessReason = claim.allowAccess(player, true);
 				if(noAccessReason != null)
 				{
 					event.setCancelled(true);
@@ -1695,7 +1695,7 @@ class PlayerEventHandler implements Listener
 			{
 			    playerData.lastClaim = claim;
 				
-				String noAccessReason = claim.allowAccess(player);
+				String noAccessReason = claim.allowAccess(player, true);
 				if(noAccessReason != null)
 				{
 					event.setCancelled(true);
@@ -1714,7 +1714,7 @@ class PlayerEventHandler implements Listener
             {
                 playerData.lastClaim = claim;
                 
-                String noContainerReason = claim.allowAccess(player);
+                String noContainerReason = claim.allowAccess(player, true);
                 if(noContainerReason != null)
                 {
                     event.setCancelled(true);
@@ -1787,7 +1787,7 @@ class PlayerEventHandler implements Listener
 			    Claim claim = this.dataStore.getClaimAt(clickedBlock.getLocation(), false, playerData.lastClaim);
 				if(claim != null)
 				{
-					String noBuildReason = claim.allowAccess(player);
+					String noBuildReason = claim.allowAccess(player, true);
 					if(noBuildReason != null)
 					{
 						GriefPrevention.sendMessage(player, TextMode.Err, noBuildReason);
@@ -1807,7 +1807,7 @@ class PlayerEventHandler implements Listener
                 Claim claim = this.dataStore.getClaimAt(clickedBlock.getLocation(), false, playerData.lastClaim);
                 if(claim != null)
                 {
-                    String reason = claim.allowAccess(player);
+                    String reason = claim.allowAccess(player, true);
                     if(reason != null)
                     {
                         GriefPrevention.sendMessage(player, TextMode.Err, reason);
