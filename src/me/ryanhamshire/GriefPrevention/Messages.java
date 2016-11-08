@@ -111,6 +111,7 @@ public enum Messages
     TrappedInstructions,
     PvPNoDrop,
     SiegeNoTeleport,
+    SiegeBlockedCommand,
     BesiegedNoTeleport,
     SiegeNoContainers,
     PvPNoContainers,

@@ -201,6 +201,9 @@ public class GriefPrevention extends JavaPlugin
 	public boolean config_dispenseWaterOutsideClaims;				//whether dispenser will dispense water outside a claim
 	public boolean config_dispenseLavaInClaims;						//whether dispenser will dispense lava inside a claim
 	public boolean config_dispenseLavaOutsideClaims;				//whether dispenser will dispense lava outside a claim
+	public boolean config_siege_AllowSiegeTeleport;				//whether dispenser will dispense lava outside a claim
+
+	public ArrayList<String> config_siege_blockedCommands;			//list of commands which may not be used during pvp combat
 	//<--- ROK
 
 	//custom log settings
@@ -604,6 +607,9 @@ public class GriefPrevention extends JavaPlugin
         this.config_dispenseWaterOutsideClaims = config.getBoolean("GriefPrevention.AllowDispenseWaterOutsideClaims", false);
         this.config_dispenseLavaInClaims = config.getBoolean("GriefPrevention.AllowDispenseLavaInClaims", false);
         this.config_dispenseLavaOutsideClaims = config.getBoolean("GriefPrevention.AllowDispenseLavaOutsideClaims", false);
+
+        this.config_siege_AllowSiegeTeleport = config.getBoolean("GriefPrevention.Siege.AllowSiegeTeleport", false);
+        String bannedSiegeCommandsList = config.getString("GriefPrevention.Siege.BlockedSlashCommands", "/home;/vanish;/spawn;/tpa");
 		//<--- ROK
 
         this.config_fireSpreads = config.getBoolean("GriefPrevention.FireSpreads", false);
@@ -864,6 +870,9 @@ public class GriefPrevention extends JavaPlugin
         outConfig.set("GriefPrevention.AllowDispenseWaterOutsideClaims", this.config_dispenseWaterOutsideClaims);
         outConfig.set("GriefPrevention.AllowDispenseLavaInClaims", this.config_dispenseLavaInClaims);
         outConfig.set("GriefPrevention.AllowDispenseLavaOutsideClaims", this.config_dispenseLavaOutsideClaims);
+
+        outConfig.set("GriefPrevention.Siege.AllowSiegeTeleport", this.config_siege_AllowSiegeTeleport);
+        outConfig.set("GriefPrevention.Siege.BlockedSlashCommands", bannedSiegeCommandsList);
         //<--- ROK
 
         outConfig.set("GriefPrevention.FireSpreads", this.config_fireSpreads);
@@ -950,6 +959,14 @@ public class GriefPrevention extends JavaPlugin
         for(int i = 0; i < commands.length; i++)
         {
             this.config_pvp_blockedCommands.add(commands[i].trim().toLowerCase());
+        }
+
+        //try to parse the list of commands which should be banned during pvp combat
+        this.config_siege_blockedCommands = new ArrayList<String>();
+        commands = bannedSiegeCommandsList.split(";");
+        for(int i = 0; i < commands.length; i++)
+        {
+            this.config_siege_blockedCommands.add(commands[i].trim().toLowerCase());
         }
     }
 
@@ -2321,6 +2338,13 @@ public class GriefPrevention extends JavaPlugin
 			//FEATURE: empower players who get "stuck" in an area where they don't have permission to build to save themselves
 			
 			PlayerData playerData = this.dataStore.getPlayerData(player.getUniqueId());
+
+			if(playerData.siegeData != null)
+			{
+				GriefPrevention.sendMessage(player, TextMode.Err, Messages.SiegeBlockedCommand);
+				return true;
+			}
+
 			Claim claim = this.dataStore.getClaimAt(player.getLocation(), false, playerData.lastClaim);
 			
 			//if another /trapped is pending, ignore this slash command

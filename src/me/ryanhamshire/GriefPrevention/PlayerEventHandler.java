@@ -414,13 +414,20 @@ class PlayerEventHandler implements Listener
 		//if in pvp, block any pvp-banned slash commands
 		if(playerData == null) playerData = this.dataStore.getPlayerData(event.getPlayer().getUniqueId());
 
-		if((playerData.inPvpCombat() || playerData.siegeData != null) && GriefPrevention.instance.config_pvp_blockedCommands.contains(command))
+		if(playerData.inPvpCombat() && GriefPrevention.instance.config_pvp_blockedCommands.contains(command))
 		{
 			event.setCancelled(true);
 			GriefPrevention.sendMessage(event.getPlayer(), TextMode.Err, Messages.CommandBannedInPvP);
 			return;
 		}
-		
+
+		if(playerData.siegeData != null && GriefPrevention.instance.config_siege_blockedCommands.contains(command))
+		{
+			event.setCancelled(true);
+			GriefPrevention.sendMessage(event.getPlayer(), TextMode.Err, Messages.SiegeBlockedCommand);
+			return;
+		}
+
 		//soft mute for chat slash commands
 		if(category == CommandCategory.Chat && this.dataStore.isSoftMuted(player.getUniqueId()))
         {
@@ -1085,7 +1092,8 @@ class PlayerEventHandler implements Listener
 		if(!GriefPrevention.instance.config_siege_enabledWorlds.contains(player.getWorld())) return;
 		
 		//these rules do not apply to admins
-		if(player.hasPermission("griefprevention.siegeteleport")) return;
+		if(GriefPrevention.instance.config_siege_AllowSiegeTeleport || player.hasPermission("griefprevention.siegeteleport"))
+			return;
 		
 		Location source = event.getFrom();
 		Claim sourceClaim = this.dataStore.getClaimAt(source, false, playerData.lastClaim);
