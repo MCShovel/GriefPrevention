@@ -687,7 +687,8 @@ class PlayerEventHandler implements Listener
 							if(info2.address.toString().equals(address))
 							{
 								OfflinePlayer bannedAccount = GriefPrevention.instance.getServer().getOfflinePlayer(info2.bannedAccountName);
-								bannedAccount.setBanned(false);
+								//ROK - nope :/ 
+								//bannedAccount.setBanned(false);
 								this.tempBannedIps.remove(j--);
 							}
 						}
